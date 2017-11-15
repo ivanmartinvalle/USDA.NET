@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Web;
+using System.Net;
 
 namespace USDA.NET.Extensions
 {
@@ -14,7 +14,7 @@ namespace USDA.NET.Extensions
         public static string FlattenQueryString(this IEnumerable<KeyValuePair<string, string>> input)
         {
             var parameters = input.Where(parameter => parameter.Value != null)
-                .Select(parameter => $"{parameter.Key}={HttpUtility.UrlEncode(parameter.Value)}");
+                .Select(parameter => $"{parameter.Key}={WebUtility.UrlEncode(parameter.Value)}");
 
             return string.Join("&", parameters);
         }
