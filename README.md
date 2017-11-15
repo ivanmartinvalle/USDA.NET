@@ -5,9 +5,23 @@
 ```csharp
 using USDA.NET.Food;
 
-var searchOptions = new SearchOptions{Q="dr pepper"};
-var searchResult = await _classUnderTest.SearchAsync(searchOptions, new PaginationOptions());
-var firstSearchItem = searchResult.List.Item.Single(x => x.Ndbno == "45255203");
+using (var compositionClient = new FoodCompositionClient(APIKey))
+{
+
+
+	var searchResult = await compositionClient.SearchAsync(new SearchOptions
+	{
+	    SearchTerm = "dr pepper"
+	});
+
+	var result = await compositionClient.ReportAsync(new ReportOptions
+	{
+		NDBNumbers = new List<string>
+		{
+			searchResult.List.Item.First().NDBNumber
+		}
+	});
+}
 ```
 
 ## Releasing an upgraded NuGet package
