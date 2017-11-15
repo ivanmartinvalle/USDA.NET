@@ -1,69 +1,77 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
 using System.Threading.Tasks;
-using System.Web;
+using JetBrains.Annotations;
+using USDA.NET.Extensions;
+using USDA.NET.Food.Report;
+using USDA.NET.Food.Search;
 
 namespace USDA.NET.Food
 {
-	public class FoodCompositionClient : IDisposable
-	{
-		private static readonly Uri SearchApi = new Uri("/ndb/search/", UriKind.Relative);
+    [UsedImplicitly]
+    public class FoodCompositionClient : BaseClient
+    {
+        private static readonly Uri SearchApi = new Uri("/ndb/search/", UriKind.Relative);
+        private static readonly Uri ReportApi = new Uri("/ndb/V2/reports", UriKind.Relative);
 
-		private readonly HttpClient _httpClient;
-		private readonly string _apiKey;
+        public FoodCompositionClient(string apiKey) : base(apiKey)
+        {
 
-		public FoodCompositionClient(string apiKey)
-		{
-			_httpClient = new HttpClient
-			{
-				BaseAddress = new Uri("https://api.nal.usda.gov")
-			};
-			_apiKey = apiKey;
-		}
+        }
 
-		public async Task<SearchResult> SearchAsync(SearchOptions searchOptions, PaginationOptions pagingOptions)
-		{
-			var queryString = BuildQueryString(searchOptions, pagingOptions);
-			var requestUri = new Uri($"{SearchApi}?{queryString}", UriKind.Relative);
+        [Pure]
+        [UsedImplicitly]
+        public async Task<Result> ReportAsync(ReportOptions reportOptions)
+        {
+            if (!reportOptions.NDBNumbers.Any()) throw new ArgumentException("NDB Numbers must have a least on item.", nameof(reportOptions.NDBNumbers));
+            
+            foreach (var ndbNumber in reportOptions.NDBNumbers)
+            {
+                // ReSharper disable once StringLiteralTypo
+                ParameterDictionary.Add(new KeyValuePair<string, string>("ndbno", ndbNumber));
+            }
 
-			var result = await _httpClient.GetAsync(requestUri);
-			result.EnsureSuccessStatusCode();
+            ParameterDictionary.Add(new KeyValuePair<string, string>("type", reportOptions.Type.ToDescription()));
+            
+            var requestUri = new Uri($"{ReportApi}?{ParameterDictionary.FlattenQueryString()}", UriKind.Relative);
 
-			return await result.Content.ReadAsAsync<SearchResult>();
-		}
+            var result = await HTTPClient.GetAsync(requestUri);
+            result.EnsureSuccessStatusCode();
 
-		private string BuildQueryString(SearchOptions searchOptions, PaginationOptions pagingOptions)
-		{
-			var parameterDictionary = new Dictionary<string, string>();
-			parameterDictionary["format"] = "json";
-			parameterDictionary["api_key"] = _apiKey;
+            var json = await result.Content.ReadAsStringAsync();
 
-			parameterDictionary["q"] = searchOptions.Q;
-			parameterDictionary["ds"] = searchOptions.Ds;
-			parameterDictionary["fg"] = searchOptions.Fg;
+            return Result.FromJson(json);
+        }
 
-			parameterDictionary["sort"] = pagingOptions.Sort;
+        [Pure]
+        [UsedImplicitly]
+        public async Task<SearchResult> SearchAsync(SearchOptions searchOptions, PaginationOptions pagingOptions = null)
+        {
+            if (pagingOptions == null) pagingOptions = new PaginationOptions();
+            
+            ParameterDictionary.Add(new KeyValuePair<string, string>("q", searchOptions.SearchTerm));
+            ParameterDictionary.Add(new KeyValuePair<string, string>("ds", searchOptions.DataSource));
+            ParameterDictionary.Add(new KeyValuePair<string, string>("fg", searchOptions.FoodGroupId));
+            ParameterDictionary.Add(new KeyValuePair<string, string>("sort", pagingOptions.Sort));
 
-			if (pagingOptions.Max != 0)
-			{
-				parameterDictionary["max"] = pagingOptions.Max.ToString();				
-			}
-			if (pagingOptions.Offset != 0)
-			{
-				parameterDictionary["offset"] = pagingOptions.Offset.ToString();			
-			}
+            if (pagingOptions.Max != 0)
+            {
+                ParameterDictionary.Add(new KeyValuePair<string, string>("max", pagingOptions.Max.ToString()));
+            }
+            if (pagingOptions.Offset != 0)
+            {
+                ParameterDictionary.Add(new KeyValuePair<string, string>("offset", pagingOptions.Offset.ToString()));
+            }
 
-			var parameters = parameterDictionary.Where(parameter => parameter.Value != null)
-				.Select(parameter => $"{parameter.Key}={HttpUtility.UrlEncode(parameter.Value)}");
-			
-			return string.Join("&", parameters);
-		}
+            var requestUri = new Uri($"{SearchApi}?{ParameterDictionary.FlattenQueryString()}", UriKind.Relative);
 
-		public void Dispose()
-		{
-			_httpClient.Dispose();
-		}
-	}
+            var result = await HTTPClient.GetAsync(requestUri);
+            result.EnsureSuccessStatusCode();
+
+            var json = await result.Content.ReadAsStringAsync();
+
+            return SearchResult.FromJson(json);
+        }
+    }
 }
