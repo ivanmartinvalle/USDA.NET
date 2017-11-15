@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Web;
 
 namespace USDA.NET.Extensions
@@ -9,7 +7,7 @@ namespace USDA.NET.Extensions
     public static class ListExtension
     {
         /// <summary>
-        /// Takes <paramref name="input"/> and converts each item to "<paramref name="input.Key"/>=<paramref name="input.Value"/>" and then joins each with "&"
+        /// Takes <paramref name="input"/> and converts each item to "<paramref name="input.Key"/>=<paramref name="input.Value"/>" and then joins each with "&amp;"
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>

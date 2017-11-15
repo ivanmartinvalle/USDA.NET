@@ -25,7 +25,8 @@ namespace USDA.NET.Food
         public async Task<Result> ReportAsync(ReportOptions reportOptions)
         {
             if (!reportOptions.NDBNumbers.Any()) throw new ArgumentException("NDB Numbers must have a least on item.", nameof(reportOptions.NDBNumbers));
-            
+            if (reportOptions.NDBNumbers.Count > 50) throw new ArgumentException("Max number of NDB Numbers is 50.", nameof(reportOptions.NDBNumbers));
+
             foreach (var ndbNumber in reportOptions.NDBNumbers)
             {
                 // ReSharper disable once StringLiteralTypo
