@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Text;
+﻿using System.Collections.Generic;
+using USDA.NET.Extensions;
 
 namespace USDA.NET.Food.Report
 {

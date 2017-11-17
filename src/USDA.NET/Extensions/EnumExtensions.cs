@@ -1,5 +1,4 @@
 ﻿using System;
-using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 
@@ -21,6 +20,33 @@ namespace USDA.NET.Extensions
                     .FirstOrDefault(x => x.Name == value.ToString())
                     ?.GetCustomAttribute<DescriptionAttribute>()
                     ?.Description ?? value.ToString();
+        }
+    }
+
+    public class DescriptionAttribute : Attribute
+    {
+        public static readonly DescriptionAttribute Default;
+
+        public DescriptionAttribute()
+        {
+        }
+
+        public DescriptionAttribute(string description)
+        {
+        }
+
+        public virtual string Description { get; }
+
+        protected string DescriptionValue { get; set; }
+
+        public override bool Equals(object obj)
+        {
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return 0;
         }
     }
 }
