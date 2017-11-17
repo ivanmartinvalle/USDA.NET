@@ -1,15 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard1.1</TargetFramework>
-    <PackageId>USDA.NET</PackageId>
+    <PackageId>USDA.API</PackageId>
     <PackageVersion>0.0.1-beta</PackageVersion>
     <Authors>ivanmartinvalle, eonasdan</Authors>
     <Description>.NET client for USDA APIs</Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <PackageTags>USDA</PackageTags>
-    <Version>0.0.6-beta</Version>
+    <Version>1.7.0.0</Version>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <AssemblyVersion>1.6.0.0</AssemblyVersion>
+    <AssemblyVersion>1.7.0.0</AssemblyVersion>
+    <FileVersion>1.7.0.0</FileVersion>
+    <Product>USDA API .NET</Product>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="JetBrains.Annotations" Version="11.1.0" />
