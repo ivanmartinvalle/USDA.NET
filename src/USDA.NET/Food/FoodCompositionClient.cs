@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using USDA.NET.Extensions;
@@ -10,14 +11,23 @@ using USDA.NET.Food.Search;
 namespace USDA.NET.Food
 {
     [UsedImplicitly]
-    public class FoodCompositionClient : BaseClient
+    public class FoodCompositionClient : IDisposable
     {
         private static readonly Uri SearchApi = new Uri("/ndb/search/", UriKind.Relative);
         private static readonly Uri ReportApi = new Uri("/ndb/V2/reports", UriKind.Relative);
 
-        public FoodCompositionClient(string apiKey) : base(apiKey)
-        {
+        protected readonly HttpClient HTTPClient;
+        protected List<KeyValuePair<string, string>> ParameterDictionary { get; set; } = new List<KeyValuePair<string, string>>();
 
+        public FoodCompositionClient(string apiKey)
+        {
+            HTTPClient = new HttpClient
+            {
+                BaseAddress = new Uri("https://api.nal.usda.gov")
+            };
+
+            ParameterDictionary.Add(new KeyValuePair<string, string>("format", "json"));
+            ParameterDictionary.Add(new KeyValuePair<string, string>("api_key", apiKey));
         }
 
         [Pure]
@@ -73,6 +83,11 @@ namespace USDA.NET.Food
             var json = await result.Content.ReadAsStringAsync();
 
             return SearchResult.FromJson(json);
+        }
+
+        public void Dispose()
+        {
+            HTTPClient?.Dispose();
         }
     }
 }
