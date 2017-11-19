@@ -1,6 +1,11 @@
 # USDA.NET
 .NET client for USDA APIs
 
+## Installation
+```sh
+dotnet add package USDA.NET --version 0.0.1-beta # or latest version
+```
+
 ## Usage
 ```csharp
 using USDA.NET.Food;
