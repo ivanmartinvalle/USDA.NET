@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27004.2009
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "USDA.NET", "src\USDA.NET\USDA.NET.csproj", "{5CBF44DC-E390-4065-AB11-98D6DD017E51}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "USDA.NET.Tests", "tests\USDA.NET.Tests\USDA.NET.Tests.csproj", "{B6FF6C6E-4830-4AC8-94F9-AFBDDB290EE2}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5CBF44DC-E390-4065-AB11-98D6DD017E51}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5CBF44DC-E390-4065-AB11-98D6DD017E51}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5CBF44DC-E390-4065-AB11-98D6DD017E51}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5CBF44DC-E390-4065-AB11-98D6DD017E51}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B6FF6C6E-4830-4AC8-94F9-AFBDDB290EE2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B6FF6C6E-4830-4AC8-94F9-AFBDDB290EE2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B6FF6C6E-4830-4AC8-94F9-AFBDDB290EE2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B6FF6C6E-4830-4AC8-94F9-AFBDDB290EE2}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {39B793B0-38AB-4CC0-88A9-D9D235CC573D}
+	EndGlobalSection
+EndGlobal

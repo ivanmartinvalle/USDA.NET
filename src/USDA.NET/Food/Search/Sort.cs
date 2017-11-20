@@ -1,4 +1,4 @@
-namespace USDA.NET.Food
+namespace USDA.NET.Food.Search
 {
 	public class Sort
 	{

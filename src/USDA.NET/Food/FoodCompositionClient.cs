@@ -3,67 +3,91 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
-using System.Web;
+using JetBrains.Annotations;
+using USDA.NET.Extensions;
+using USDA.NET.Food.Report;
+using USDA.NET.Food.Search;
 
 namespace USDA.NET.Food
 {
-	public class FoodCompositionClient : IDisposable
-	{
-		private static readonly Uri SearchApi = new Uri("/ndb/search/", UriKind.Relative);
+    [UsedImplicitly]
+    public class FoodCompositionClient : IDisposable
+    {
+        private static readonly Uri SearchApi = new Uri("/ndb/search/", UriKind.Relative);
+        private static readonly Uri ReportApi = new Uri("/ndb/V2/reports", UriKind.Relative);
 
-		private readonly HttpClient _httpClient;
-		private readonly string _apiKey;
+        protected readonly HttpClient HTTPClient;
+        protected List<KeyValuePair<string, string>> ParameterDictionary { get; set; } = new List<KeyValuePair<string, string>>();
 
-		public FoodCompositionClient(string apiKey)
-		{
-			_httpClient = new HttpClient
-			{
-				BaseAddress = new Uri("https://api.nal.usda.gov")
-			};
-			_apiKey = apiKey;
-		}
+        public FoodCompositionClient(string apiKey)
+        {
+            HTTPClient = new HttpClient
+            {
+                BaseAddress = new Uri("https://api.nal.usda.gov")
+            };
 
-		public async Task<SearchResult> SearchAsync(SearchOptions searchOptions, PaginationOptions pagingOptions)
-		{
-			var queryString = BuildQueryString(searchOptions, pagingOptions);
-			var requestUri = new Uri($"{SearchApi}?{queryString}", UriKind.Relative);
+            ParameterDictionary.Add(new KeyValuePair<string, string>("format", "json"));
+            ParameterDictionary.Add(new KeyValuePair<string, string>("api_key", apiKey));
+        }
 
-			var result = await _httpClient.GetAsync(requestUri);
-			result.EnsureSuccessStatusCode();
+        [Pure]
+        [UsedImplicitly]
+        public async Task<Result> ReportAsync(ReportOptions reportOptions)
+        {
+            if (!reportOptions.NDBNumbers.Any()) throw new ArgumentException("NDB Numbers must have a least on item.", nameof(reportOptions.NDBNumbers));
+            if (reportOptions.NDBNumbers.Count > 50) throw new ArgumentException("Max number of NDB Numbers is 50.", nameof(reportOptions.NDBNumbers));
 
-			return await result.Content.ReadAsAsync<SearchResult>();
-		}
+            foreach (var ndbNumber in reportOptions.NDBNumbers)
+            {
+                // ReSharper disable once StringLiteralTypo
+                ParameterDictionary.Add(new KeyValuePair<string, string>("ndbno", ndbNumber));
+            }
 
-		private string BuildQueryString(SearchOptions searchOptions, PaginationOptions pagingOptions)
-		{
-			var parameterDictionary = new Dictionary<string, string>();
-			parameterDictionary["format"] = "json";
-			parameterDictionary["api_key"] = _apiKey;
+            ParameterDictionary.Add(new KeyValuePair<string, string>("type", reportOptions.Type.ToDescription()));
+            
+            var requestUri = new Uri($"{ReportApi}?{ParameterDictionary.FlattenQueryString()}", UriKind.Relative);
 
-			parameterDictionary["q"] = searchOptions.Q;
-			parameterDictionary["ds"] = searchOptions.Ds;
-			parameterDictionary["fg"] = searchOptions.Fg;
+            var result = await HTTPClient.GetAsync(requestUri);
+            result.EnsureSuccessStatusCode();
 
-			parameterDictionary["sort"] = pagingOptions.Sort;
+            var json = await result.Content.ReadAsStringAsync();
 
-			if (pagingOptions.Max != 0)
-			{
-				parameterDictionary["max"] = pagingOptions.Max.ToString();				
-			}
-			if (pagingOptions.Offset != 0)
-			{
-				parameterDictionary["offset"] = pagingOptions.Offset.ToString();			
-			}
+            return Result.FromJson(json);
+        }
 
-			var parameters = parameterDictionary.Where(parameter => parameter.Value != null)
-				.Select(parameter => $"{parameter.Key}={HttpUtility.UrlEncode(parameter.Value)}");
-			
-			return string.Join("&", parameters);
-		}
+        [Pure]
+        [UsedImplicitly]
+        public async Task<SearchResult> SearchAsync(SearchOptions searchOptions, PaginationOptions pagingOptions = null)
+        {
+            if (pagingOptions == null) pagingOptions = new PaginationOptions();
+            
+            ParameterDictionary.Add(new KeyValuePair<string, string>("q", searchOptions.SearchTerm));
+            ParameterDictionary.Add(new KeyValuePair<string, string>("ds", searchOptions.DataSource));
+            ParameterDictionary.Add(new KeyValuePair<string, string>("fg", searchOptions.FoodGroupId));
+            ParameterDictionary.Add(new KeyValuePair<string, string>("sort", pagingOptions.Sort));
 
-		public void Dispose()
-		{
-			_httpClient.Dispose();
-		}
-	}
+            if (pagingOptions.Max != 0)
+            {
+                ParameterDictionary.Add(new KeyValuePair<string, string>("max", pagingOptions.Max.ToString()));
+            }
+            if (pagingOptions.Offset != 0)
+            {
+                ParameterDictionary.Add(new KeyValuePair<string, string>("offset", pagingOptions.Offset.ToString()));
+            }
+
+            var requestUri = new Uri($"{SearchApi}?{ParameterDictionary.FlattenQueryString()}", UriKind.Relative);
+
+            var result = await HTTPClient.GetAsync(requestUri);
+            result.EnsureSuccessStatusCode();
+
+            var json = await result.Content.ReadAsStringAsync();
+
+            return SearchResult.FromJson(json);
+        }
+
+        public void Dispose()
+        {
+            HTTPClient?.Dispose();
+        }
+    }
 }
